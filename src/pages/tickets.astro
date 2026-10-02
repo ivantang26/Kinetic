@@ -1,0 +1,74 @@
+---
+import Base from '../layouts/Base.astro';
+import MegaTitle from '../components/MegaTitle.astro';
+import TicketTiers from '../islands/TicketTiers.tsx';
+import { TIERS, BASELINE_STATUS } from '../data/tickets';
+import { FESTIVAL } from '../data/festival';
+
+const onSale = new Date(FESTIVAL.onSale);
+const onSaleLabel = onSale.toLocaleString('en-GB', {
+  weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London',
+});
+const total = TIERS.reduce((n, t) => n + t.allocation, 0).toLocaleString('en-GB');
+---
+
+<Base title="Tickets" description="PULSE 27 day tickets and weekend passes, with live availability.">
+  <header class="page-head wrap">
+    <MegaTitle text="Tickets" />
+    <p class="lede">
+      {total} tickets across Friday, Saturday, Sunday and two weekend passes. Prices include the booking fee. Checkout
+      is handled securely by our ticketing partner.
+    </p>
+  </header>
+
+  <section class="wrap tix" aria-label="Ticket types">
+    <TicketTiers client:load tiers={TIERS} baseline={BASELINE_STATUS} variant="page" />
+  </section>
+
+  <section class="section wrap tix-info" aria-labelledby="how-h">
+    <h2 id="how-h" class="label">How buying works</h2>
+    <ol role="list" class="steps">
+      <li>
+        <span class="steps__n mono">01</span>
+        <h3>On-sale queue</h3>
+        <p>
+          General sale opens {onSaleLabel}. On the day, <a href="/queue/">the queue page</a> counts down and lets
+          people in at a steady pace, so nobody gets a crashed checkout.
+        </p>
+      </li>
+      <li>
+        <span class="steps__n mono">02</span>
+        <h3>Partner checkout</h3>
+        <p>Pick a ticket and the partner's checkout opens right here. They take payment; we never see card details.</p>
+      </li>
+      <li>
+        <span class="steps__n mono">03</span>
+        <h3>Build My PULSE</h3>
+        <p>Star the sets you want on the <a href="/schedule/">schedule</a>, check for clashes and add them to your calendar.</p>
+      </li>
+    </ol>
+  </section>
+</Base>
+
+<style>
+  .tix { padding-bottom: 24px; }
+  .tix-info { border-top: 1px solid var(--line); }
+  .steps {
+    display: grid;
+    gap: 32px;
+    margin-top: 32px;
+  }
+  @media (min-width: 900px) {
+    .steps { grid-template-columns: repeat(3, 1fr); }
+  }
+  .steps li { display: grid; gap: 12px; align-content: start; }
+  .steps__n { color: var(--fg); }
+  .steps h3 {
+    font-family: var(--font-display);
+    font-variation-settings: 'wght' 800, 'wdth' 100;
+    font-size: clamp(1.75rem, 1.4rem + 1vw, 2.5rem);
+    line-height: 0.95;
+    text-transform: uppercase;
+  }
+  .steps a { color: var(--fg); text-underline-offset: 3px; }
+</style>

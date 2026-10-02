@@ -1,0 +1,77 @@
+---
+import Base from '../layouts/Base.astro';
+import MegaTitle from '../components/MegaTitle.astro';
+import { DATE_RANGE } from '../data/festival';
+
+const faqs: [string, string][] = [
+  ['When and where is PULSE 27?', `${DATE_RANGE} in Victoria Park, London E9. Gates open at 12:00 and the last set ends at 23:30 each day.`],
+  ['What age do you need to be?', 'PULSE 27 is 18+. Bring photo ID: passport, driving licence or a PASS card. Digital IDs on your phone are accepted.'],
+  ['Can I buy tickets at the gate?', 'Only if a day has not sold out, and only by card. We recommend buying in advance. Availability is shown live on the tickets page.'],
+  ['What happens on on-sale day?', 'You join a queue page that counts down to the opening time. When sales open, people are let through in small waves to keep checkout fast. Refreshing does not lose your place.'],
+  ['Can I transfer or resell my ticket?', "Yes, through our ticketing partner's official resale at face value, until 48 hours before the gates open."],
+  ['Does the schedule work without signal?', 'Yes. Open the schedule once on your phone and it is saved for offline use. Your starred sets (My PULSE) are stored on your device, so they work in airplane mode.'],
+  ['What is Calm mode?', 'A switch in the menu that stops all moving type for the rest of your visit. The site also respects the reduced-motion setting on your device.'],
+  ['What can I bring?', 'Empty refillable bottles (free water points across the site), sealed sun cream up to 100ml, small bags only. No glass, no chairs, no gazebos.'],
+  ['Is the site accessible?', 'Yes: step-free West Gate, viewing decks at every stage, free personal assistant tickets, a quiet space and a Changing Places toilet. See Venue & travel.'],
+  ['Do workshops cost extra?', 'No. Talks and workshops in the Forum are included with every ticket. Workshops are capped at 40, and weekend pass holders can book first.'],
+];
+---
+
+<Base title="FAQ" description="Answers to common PULSE 27 questions: tickets, ID, on-sale queue, offline schedule, access and more.">
+  <header class="page-head wrap">
+    <MegaTitle text="FAQ" />
+    <p class="lede">Everything people ask us, answered. Still stuck? Email hello@pulse27.example.</p>
+  </header>
+  <section class="wrap faq" aria-label="Questions">
+    {
+      faqs.map(([q, a]) => (
+        <details class="faq__item">
+          <summary>
+            <span>{q}</span>
+            <span class="faq__icon" aria-hidden="true" />
+          </summary>
+          <p>{a}</p>
+        </details>
+      ))
+    }
+  </section>
+</Base>
+
+<style>
+  .faq { padding-bottom: clamp(64px, 10vw, 140px); }
+  .faq__item { border-bottom: 1px solid var(--line); }
+  .faq__item:first-child { border-top: 1px solid var(--line); }
+  summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    padding-block: 22px;
+    cursor: pointer;
+    list-style: none;
+    font-family: var(--font-display);
+    font-variation-settings: 'wght' 750, 'wdth' 100;
+    font-size: clamp(1.375rem, 1.1rem + 1vw, 2.25rem);
+    line-height: 1.05;
+    text-transform: uppercase;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary:hover { color: var(--fg); }
+  .faq__icon {
+    position: relative;
+    flex: none;
+    width: 28px;
+    height: 28px;
+  }
+  .faq__icon::before,
+  .faq__icon::after {
+    content: '';
+    position: absolute;
+    inset: 12px 0;
+    background: currentColor;
+  }
+  .faq__icon::after { inset: 0 12px; }
+  details[open] .faq__icon::after { display: none; }
+  details[open] summary { color: var(--fg); }
+  .faq__item p { max-width: 64ch; padding-bottom: 24px; }
+</style>

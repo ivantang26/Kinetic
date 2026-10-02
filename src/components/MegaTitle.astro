@@ -1,0 +1,33 @@
+---
+/**
+ * Mega display word that fills its container and reacts to the cursor on
+ * desktop (FR-4) or waves slowly on touch. Letters are split here on the
+ * server: the parent carries the readable label, letters are aria-hidden.
+ */
+interface Props {
+  text: string;
+  as?: 'h1' | 'h2' | 'h3' | 'p';
+  /** Accessible name, if it should differ from the visible word. */
+  label?: string;
+  class?: string;
+  /** Resting weight; the cursor lens raises letters towards 900. */
+  rest?: number;
+  id?: string;
+}
+const { text, as: Tag = 'h1', label, class: cls = '', rest, id } = Astro.props;
+const chars = [...text];
+const style = rest ? `--rest-wght:${rest}` : undefined;
+---
+
+<Tag id={id} class:list={['mega', 'kt', 'fit', cls]} data-fit="fill" data-reactive-type aria-label={label ?? text} style={style}>
+  <span class="fit__inner" aria-hidden="true">
+    {chars.map((c, i) => (c === ' ' ? ' ' : <span class="ch" style={`--i:${i}`}>{c}</span>))}
+  </span>
+</Tag>
+
+<script>
+  import { initFit } from '../lib/fit';
+  import { initAllReactive } from '../lib/reactive';
+  initFit();
+  initAllReactive();
+</script>

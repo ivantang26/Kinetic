@@ -1,0 +1,130 @@
+/* Ticket tiers island */
+.tiers__list {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+}
+.tier {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: 16px;
+  padding: clamp(20px, 2.2vw, 28px);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  overflow: hidden;
+}
+/* Day swatch along the top edge */
+.tier::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 8px;
+  background: linear-gradient(90deg, var(--acid) 0 33.3%, var(--red) 0 66.6%, var(--blue) 0);
+}
+.tier--fri::before { background: var(--acid); }
+.tier--sat::before { background: var(--red); }
+.tier--sun::before { background: var(--blue); }
+.tier__top {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px 12px;
+  padding-top: 8px;
+}
+.tier__name {
+  font-family: var(--font-display);
+  font-variation-settings: 'wght' 800, 'wdth' 100;
+  font-size: clamp(2.25rem, 1.8rem + 1.2vw, 3rem);
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+.tier__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.status__icon {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+}
+/* Status is shape + text, never colour alone */
+.status--on_sale { color: var(--fg); }
+.status--on_sale .status__icon { background: currentColor; }
+.status--few_left { color: var(--text); background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.status--few_left .status__icon { background: linear-gradient(90deg, currentColor 50%, transparent 50%); }
+.status--sold_out { color: var(--muted); }
+.status--sold_out .status__icon { border-radius: 0; border: 0; background:
+  linear-gradient(45deg, transparent 42%, currentColor 42% 58%, transparent 58%),
+  linear-gradient(-45deg, transparent 42%, currentColor 42% 58%, transparent 58%); }
+.tier__price {
+  font-family: var(--font-display);
+  font-variation-settings: 'wght' 300, 'wdth' 100;
+  font-size: clamp(3rem, 2.4rem + 2vw, 4.5rem);
+  line-height: 0.9;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg);
+}
+.tier__inc {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  color: var(--text);
+}
+.tier__inc li { padding-left: 18px; position: relative; }
+.tier__inc li::before { content: '—'; position: absolute; left: 0; color: var(--muted); }
+.tier__cta { width: 100%; }
+.tier.is-sold_out .tier__price { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 3px; }
+
+.tiers__live {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  color: var(--muted);
+}
+.tiers__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.tiers__live.is-live .tiers__dot { background: var(--fg); }
+
+/* Checkout dialog (partner widget mount) */
+.checkout {
+  width: min(560px, calc(100% - 32px));
+  max-height: calc(100% - 32px);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--bg);
+  color: var(--text);
+}
+.checkout::backdrop { background: rgba(10, 10, 10, 0.8); }
+.checkout__body { display: grid; gap: 20px; padding: clamp(20px, 4vw, 32px); }
+.checkout__head { display: flex; justify-content: space-between; align-items: start; gap: 16px; }
+.checkout__title {
+  font-family: var(--font-display);
+  font-variation-settings: 'wght' 800, 'wdth' 100;
+  font-size: clamp(2.25rem, 2rem + 2vw, 3.5rem);
+  line-height: 0.9;
+  text-transform: uppercase;
+  color: var(--fg);
+}
+.checkout__total { color: var(--fg); }
+.checkout__widget {
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+  border: 2px dashed var(--line);
+  border-radius: 16px;
+}

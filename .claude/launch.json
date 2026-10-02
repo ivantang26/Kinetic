@@ -1,0 +1,7 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "pulse-preview", "runtimeExecutable": "npx", "runtimeArgs": ["astro", "preview", "--port", "4431"], "port": 4431 },
+    { "name": "pulse-dev", "runtimeExecutable": "npx", "runtimeArgs": ["astro", "dev", "--port", "4432"], "port": 4432 }
+  ]
+}

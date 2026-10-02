@@ -1,0 +1,51 @@
+---
+---
+
+<section class="news section" aria-labelledby="news-h">
+  <div class="wrap news__inner">
+    <div>
+      <p class="label">Newsletter</p>
+      <h2 id="news-h" class="headline news__h">Get the drop first</h2>
+      <p class="lede">Line-up announcements, on-sale times and set times, before anyone else. About one email a month.</p>
+    </div>
+    <form class="news__form" data-news novalidate>
+      <div class="field">
+        <label for="news-email">Email address</label>
+        <input class="input" id="news-email" name="email" type="email" autocomplete="email" required aria-describedby="news-msg" />
+      </div>
+      <button class="btn btn--accent" type="submit">Sign up</button>
+      <p id="news-msg" class="news__msg mono" role="status"></p>
+    </form>
+  </div>
+</section>
+
+<style>
+  .news { border-top: 1px solid var(--line); }
+  .news__inner { display: grid; gap: 40px; align-items: end; }
+  .news__h { margin-block: 16px 20px; }
+  .news__form { display: grid; gap: 16px; max-width: 520px; }
+  .news__form .btn { justify-self: start; }
+  .news__msg { min-height: 1.5em; color: var(--fg); }
+  @media (min-width: 1000px) {
+    .news__inner { grid-template-columns: 1.3fr 1fr; }
+  }
+</style>
+
+<script>
+  // Prototype: validates and confirms locally. Wire to the ESP's endpoint to send.
+  const form = document.querySelector<HTMLFormElement>('[data-news]');
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const input = form.querySelector<HTMLInputElement>('input[type=email]')!;
+    const msg = form.querySelector<HTMLElement>('.news__msg')!;
+    if (!input.checkValidity()) {
+      input.setAttribute('aria-invalid', 'true');
+      msg.textContent = 'Enter an email address like name@example.com.';
+      input.focus();
+      return;
+    }
+    input.removeAttribute('aria-invalid');
+    msg.textContent = "You're on the list. See you in the park.";
+    form.reset();
+  });
+</script>

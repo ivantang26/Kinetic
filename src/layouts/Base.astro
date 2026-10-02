@@ -1,0 +1,81 @@
+---
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import { DATE_RANGE, PAGE_TITLES } from '../data/festival';
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Show the footer (the schedule keeps it; the queue page has its own file). */
+  footer?: boolean;
+}
+
+const { title, description = `PULSE 27 — three days of music and design. ${DATE_RANGE}, Victoria Park, London.`, footer = true } = Astro.props;
+const path = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
+const sweepWord = PAGE_TITLES[path] ?? 'PULSE';
+const fullTitle = title === 'PULSE 27' ? `PULSE 27 — ${DATE_RANGE} · Victoria Park, London` : `${title} — PULSE 27`;
+const canonical = new URL(path, Astro.site);
+---
+
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="theme-color" content="#0A0A0A" />
+    <meta name="color-scheme" content="dark" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <link rel="preload" href="/fonts/pulse-flex.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/inter-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/jbmono-500.woff2" as="font" type="font/woff2" crossorigin />
+    <!-- Boot: apply Calm mode, day theme and sweep state before first paint. -->
+    <script is:inline>
+      (function () {
+        var d = document.documentElement;
+        try {
+          var calm = sessionStorage.getItem('pulse27:calm') === 'on';
+          if (calm) d.dataset.calm = 'on';
+          var day = sessionStorage.getItem('pulse27:day');
+          var q = new URLSearchParams(location.search).get('day');
+          if (q && /^(all|fri|sat|sun)$/.test(q)) day = q;
+          if (day && /^(fri|sat|sun)$/.test(day)) {
+            d.dataset.day = day;
+            if (day === 'sun') document.querySelector('meta[name="theme-color"]').setAttribute('content', '#2B4BFF');
+          }
+          if (sessionStorage.getItem('pulse27:sweep')) {
+            sessionStorage.removeItem('pulse27:sweep');
+            if (!calm && !matchMedia('(prefers-reduced-motion: reduce)').matches) d.classList.add('sweep-in');
+          }
+        } catch (e) {}
+        d.classList.add('js');
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <Nav path={path} />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    {footer && <Footer />}
+    <div class="sweep" aria-hidden="true">
+      <span class="sweep__word" style={`--chars:${sweepWord.length}`}>{sweepWord}</span>
+    </div>
+    <script>
+      import { initSweep } from '../lib/sweep';
+      initSweep();
+      if ('serviceWorker' in navigator && import.meta.env.PROD) {
+        addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+      }
+    </script>
+  </body>
+</html>

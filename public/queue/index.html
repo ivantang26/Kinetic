@@ -1,0 +1,136 @@
+<!doctype html>
+<!--
+  PULSE 27 on-sale queue (FR-9).
+  One static file, no framework, no API calls except a single HEAD request for
+  the server clock. Served from the CDN edge with a long s-maxage (see
+  public/_headers) so it can absorb 50,000+ concurrent visitors.
+  Try it: /queue/?demo=10 counts down 10 seconds.
+-->
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Queue — PULSE 27 tickets</title>
+<meta name="description" content="PULSE 27 tickets go on sale soon. Keep this page open and you'll be let in automatically.">
+<meta name="theme-color" content="#0A0A0A">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/fonts/pulse-flex.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:'Pulse Flex';src:url(/fonts/pulse-flex.woff2) format('woff2');font-weight:100 900;font-stretch:50% 150%;font-display:swap}
+@property --w{syntax:'<number>';inherits:true;initial-value:900}
+:root{--black:#0A0A0A;--acid:#D4FF3A;--white:#F7F7F2;--muted:#B9B9B1;--line:#3a3a38;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;min-height:100svh;display:grid;grid-template-rows:auto 1fr auto;background:var(--black);color:var(--white);font:16px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif}
+.mono{font-family:ui-monospace,'SFMono-Regular',Consolas,monospace;font-weight:500;letter-spacing:.04em;text-transform:uppercase;font-variant-numeric:tabular-nums}
+header,footer{padding:16px clamp(16px,3.2vw,48px);display:flex;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);font-size:14px}
+footer{border:0;border-top:1px solid var(--line);color:var(--muted)}
+main{display:grid;grid-template-columns:minmax(0,1fr);align-content:center;gap:clamp(20px,3vw,40px);padding:clamp(24px,5vw,64px) clamp(16px,3.2vw,48px)}
+.word{margin:0;font-family:'Pulse Flex','Arial Narrow',sans-serif;font-variation-settings:'wght' var(--w),'wdth' 100;font-size:min(25vw,38vh);line-height:.8;color:var(--acid);text-align:center;white-space:nowrap}
+@media (prefers-reduced-motion:no-preference){.word{animation:beat 2s linear infinite}}
+@keyframes beat{0%{--w:900;animation-timing-function:cubic-bezier(.3,0,.5,1)}45%,50%{--w:400}93%{--w:400;animation-timing-function:cubic-bezier(.1,.8,.2,1)}100%{--w:900}}
+.status{text-align:center;display:grid;gap:12px;justify-items:center}
+.status h2{margin:0;font-size:clamp(20px,2.5vw,28px);font-weight:600}
+.count{display:flex;gap:clamp(12px,3vw,40px);justify-content:center;margin:0;padding:0;list-style:none}
+.count li{display:grid;gap:4px;min-width:3.2ch;text-align:center}
+.count b{font-family:'Pulse Flex','Arial Narrow',sans-serif;font-variation-settings:'wght' 800,'wdth' 100;font-weight:800;font-size:clamp(48px,9vw,120px);line-height:.9;font-variant-numeric:tabular-nums;color:var(--white)}
+.count span{font-size:13px;color:var(--muted)}
+.bar{width:min(560px,100%);height:10px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--acid)}
+.note{max-width:52ch;margin:0 auto;color:var(--muted);text-align:center}
+.btn{display:inline-flex;align-items:center;min-height:48px;padding:12px 22px;border-radius:99px;background:var(--acid);color:var(--black);text-decoration:none;font-weight:600}
+.btn:focus-visible,a:focus-visible{outline:3px solid var(--acid);outline-offset:3px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header><span class="mono" style="color:var(--acid)">PULSE 27</span><span class="mono">Ticket queue</span></header>
+<main>
+  <h1 class="word" aria-label="PULSE 27 tickets">PULSE</h1>
+  <section class="status" aria-labelledby="st">
+    <h2 id="st">Tickets go on sale <span id="when">soon</span></h2>
+    <ul class="count mono" id="count" aria-hidden="true">
+      <li><b id="d">--</b><span>Days</span></li>
+      <li><b id="h">--</b><span>Hrs</span></li>
+      <li><b id="m">--</b><span>Min</span></li>
+      <li><b id="s">--</b><span>Sec</span></li>
+    </ul>
+    <div class="bar" id="bar" hidden><i id="fill"></i></div>
+    <p id="live" class="mono" role="status" aria-live="polite"></p>
+    <a class="btn" id="go" href="/tickets/" hidden>Go to tickets</a>
+  </section>
+  <p class="note">Keep this page open. When sales open you'll be let in automatically, in small waves so checkout stays fast. Refreshing won't lose your place.</p>
+</main>
+<footer><span>Victoria Park, London</span><a href="/" style="color:inherit">pulse27.example</a></footer>
+<script>
+(function () {
+  var ON_SALE = Date.parse('2027-02-04T10:00:00Z'); // keep in sync with FESTIVAL.onSale
+  var q = new URLSearchParams(location.search);
+  var demo = parseInt(q.get('demo'), 10);
+  var WAVE_MAX = demo > 0 ? 5000 : 45000; // spread entry over 45s to flatten the spike
+  var store = window.sessionStorage;
+  var key = 'pulse27:queue';
+  var saved = null;
+  try { saved = JSON.parse(store.getItem(key) || 'null'); } catch (e) {}
+  if (demo > 0) {
+    // A finished demo starts over; a refresh mid-demo keeps its place.
+    if (!saved || saved.demo !== demo || Date.now() > saved.target + WAVE_MAX) {
+      saved = { demo: demo, target: Date.now() + demo * 1000 };
+    }
+    ON_SALE = saved.target;
+  }
+  // Each visitor gets a stable random delay, kept across refreshes.
+  if (!saved || saved.jitter == null) { saved = saved || {}; saved.jitter = Math.floor(Math.random() * WAVE_MAX); }
+  try { store.setItem(key, JSON.stringify(saved)); } catch (e) {}
+  var jitter = saved.jitter;
+
+  var offset = 0; // server clock minus local clock
+  var el = function (id) { return document.getElementById(id); };
+  var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+  var state = '';
+
+  el('when').textContent = new Date(ON_SALE).toLocaleString('en-GB', {
+    weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London'
+  });
+
+  function say(next, msg) {
+    if (state === next) return;
+    state = next;
+    el('live').textContent = msg;
+  }
+
+  function tick() {
+    var now = Date.now() + offset;
+    var left = ON_SALE - now;
+    if (left > 0) {
+      var t = Math.floor(left / 1000);
+      el('d').textContent = pad(Math.floor(t / 86400));
+      el('h').textContent = pad(Math.floor(t % 86400 / 3600));
+      el('m').textContent = pad(Math.floor(t % 3600 / 60));
+      el('s').textContent = pad(t % 60);
+      say('wait', 'Waiting for sales to open.');
+      return setTimeout(tick, 1000 - (now % 1000) + 5);
+    }
+    el('count').hidden = true;
+    var since = now - ON_SALE;
+    if (since < jitter) {
+      el('bar').hidden = false;
+      el('fill').style.width = Math.min(100, since / jitter * 100) + '%';
+      say('wave', 'Sales are open. Letting people in now. You are in a wave, please keep this page open.');
+      return setTimeout(tick, 250);
+    }
+    say('go', 'It is your turn. Taking you to tickets.');
+    el('go').hidden = false;
+    el('fill').style.width = '100%';
+    location.href = '/tickets/';
+  }
+
+  // One cheap request for the edge server's clock, so local clocks can't jump the queue.
+  fetch(location.pathname, { method: 'HEAD', cache: 'no-store' }).then(function (r) {
+    var d = Date.parse(r.headers.get('date'));
+    if (d && !(demo > 0)) offset = d - Date.now();
+  }).catch(function () {}).then(tick);
+})();
+</script>
+</body>
+</html>

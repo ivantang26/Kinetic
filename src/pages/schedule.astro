@@ -1,0 +1,39 @@
+---
+import Base from '../layouts/Base.astro';
+import Schedule from '../islands/Schedule.tsx';
+---
+
+<Base title="Schedule" description="PULSE 27 stage times. Star sets to build My PULSE, get clash warnings and export to your calendar. Works offline.">
+  <!-- Kinetic-free by design: this page is used outdoors, in sunlight, on weak signal. -->
+  <header class="page-head wrap sched-head">
+    <h1 class="sched-title fit" data-fit="cap"><span class="fit__inner">Schedule</span></h1>
+    <p class="lede">
+      Star sets to build <strong>My PULSE</strong>. We'll flag clashes, and you can export to your calendar. Saved on
+      this device, and it works offline after your first visit.
+    </p>
+  </header>
+  <div class="wrap sched-wrap">
+    <Schedule client:load />
+  </div>
+</Base>
+
+<script>
+  // Static fit only (no motion on this page): caps the title so it never overflows.
+  import { initFit } from '../lib/fit';
+  initFit();
+</script>
+
+<style>
+  .sched-title {
+    --fit-wght: 800;
+    --fit-wdth: 100;
+    font-family: var(--font-display);
+    font-variation-settings: 'wght' 800, 'wdth' 100;
+    font-size: clamp(3.5rem, 2rem + 8vw, 11rem);
+    line-height: 0.85;
+    text-transform: uppercase;
+    color: var(--fg);
+    margin-bottom: 20px;
+  }
+  .sched-wrap { padding-bottom: clamp(48px, 8vw, 120px); }
+</style>

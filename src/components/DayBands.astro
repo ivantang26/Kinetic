@@ -1,0 +1,67 @@
+---
+import MegaTitle from './MegaTitle.astro';
+import { DAYS, topActs } from '../data/festival';
+---
+
+<section class="days" aria-labelledby="days-h">
+  <h2 id="days-h" class="sr-only">Three days</h2>
+  {
+    DAYS.map((d) => (
+      <article class:list={['band', `band--${d.id}`]} aria-labelledby={`band-${d.id}`}>
+        <div class="wrap band__inner">
+          <p class="band__date mono">
+            <span>{d.short} {d.label} 2027</span>
+            <span>Gates 12:00 · Last set 23:30</span>
+          </p>
+          <MegaTitle as="h3" id={`band-${d.id}`} text={d.name} rest={600} />
+          <ul role="list" class="band__acts">
+            {topActs(d.id, 7).map((a) => (
+              <li>{a.name}</li>
+            ))}
+          </ul>
+          <a class="btn band__link" href={`/lineup/?day=${d.id}`}>
+            Full {d.name} line-up
+          </a>
+        </div>
+      </article>
+    ))
+  }
+</section>
+
+<style>
+  /* Each band keeps its own day colour regardless of the site theme. */
+  .band {
+    background: var(--bg);
+    color: var(--text);
+    padding-block: clamp(40px, 7vw, 112px);
+  }
+  .band--fri { --bg: var(--acid); --fg: var(--black); --text: var(--black); --line: rgba(10, 10, 10, 0.35); }
+  .band--sat { --bg: var(--red); --fg: var(--black); --text: var(--black); --line: rgba(10, 10, 10, 0.35); }
+  .band--sun { --bg: var(--blue); --fg: var(--white); --text: var(--white); --line: rgba(247, 247, 242, 0.45); }
+  .band__inner { display: grid; gap: clamp(16px, 2.4vw, 32px); }
+  .band__date {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 4px 24px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid currentColor;
+  }
+  .band__acts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.1em 0;
+    font-family: var(--font-display);
+    font-variation-settings: 'wght' 700, 'wdth' 100;
+    font-size: clamp(1.375rem, 1rem + 1.8vw, 2.75rem);
+    line-height: 1.05;
+    text-transform: uppercase;
+  }
+  .band__acts li:not(:last-child)::after {
+    content: '/';
+    padding-inline: 0.35em;
+    font-variation-settings: 'wght' 200, 'wdth' 100;
+  }
+  .band__acts li:first-child { font-variation-settings: 'wght' 900, 'wdth' 100; }
+  .band__link { justify-self: start; }
+</style>

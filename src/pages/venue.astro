@@ -1,0 +1,73 @@
+---
+import Base from '../layouts/Base.astro';
+import MegaTitle from '../components/MegaTitle.astro';
+import VenueMap from '../components/VenueMap.astro';
+
+const travel = [
+  { mode: 'Tube', body: 'Mile End (Central, District, Hammersmith & City). Leave by the Grove Road exit and walk 15 minutes north along the canal to the West Gate.' },
+  { mode: 'Overground', body: 'Hackney Wick is a 10-minute walk to the East Gate. Homerton is 12 minutes. Extra late trains run until 00:30 every night.' },
+  { mode: 'Bus', body: 'Routes 277, 339 and 425 stop at Victoria Park Road. Night bus N205 runs from Mile End.' },
+  { mode: 'Bike', body: '1,200 free, stewarded bike racks at both gates, open until 00:30. Cycle hire docks are on Grove Road.' },
+  { mode: 'Car', body: 'There is no public parking. Blue Badge drop-off is on Old Ford Road at the West Gate; book a space in advance.' },
+];
+const access = [
+  'Step-free route from Mile End to the West Gate, with an accessible entrance lane.',
+  'Raised viewing decks with seating at every stage. Book through the access team.',
+  'Personal assistant tickets are free with any ticket.',
+  'Quiet space with seating and water next to the Forum.',
+  'Changing Places toilet at the West Gate, and accessible toilets across the site.',
+];
+---
+
+<Base title="Venue & travel" description="Getting to PULSE 27 in Victoria Park, London E9: Tube, Overground, bus, bike and access.">
+  <header class="page-head wrap">
+    <MegaTitle text="Venue" />
+    <p class="lede">Victoria Park, London E9. A 213-acre park between Hackney and Bow, with four stages under the trees.</p>
+  </header>
+
+  <section class="wrap venue" aria-label="Site map">
+    <VenueMap />
+  </section>
+
+  <section class="section wrap" aria-labelledby="travel-h">
+    <h2 id="travel-h" class="label">Getting here</h2>
+    <dl class="travel">
+      {
+        travel.map((t) => (
+          <div class="travel__row">
+            <dt class="mono">{t.mode}</dt>
+            <dd>{t.body}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
+  <section class="section wrap access" aria-labelledby="access-h">
+    <h2 id="access-h" class="label">Access</h2>
+    <ul role="list" class="access__list">
+      {access.map((a) => <li>{a}</li>)}
+    </ul>
+    <p class="mono access__contact">Access team: access@pulse27.example · 020 0000 0027</p>
+  </section>
+</Base>
+
+<style>
+  .venue { padding-bottom: 24px; }
+  .travel { display: grid; margin-top: 24px; }
+  .travel__row {
+    display: grid;
+    gap: 6px 32px;
+    padding-block: 20px;
+    border-bottom: 1px solid var(--line);
+  }
+  .travel dt { color: var(--fg); text-transform: uppercase; letter-spacing: 0.06em; }
+  .travel dd { max-width: 62ch; }
+  @media (min-width: 800px) {
+    .travel__row { grid-template-columns: 12rem 1fr; }
+  }
+  .access { border-top: 1px solid var(--line); }
+  .access__list { display: grid; gap: 0; margin-top: 24px; max-width: 72ch; }
+  .access__list li { padding-block: 14px; border-bottom: 1px solid var(--line); }
+  .access__contact { margin-top: 24px; color: var(--fg); }
+</style>

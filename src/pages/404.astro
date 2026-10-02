@@ -1,0 +1,20 @@
+---
+import Base from '../layouts/Base.astro';
+import MegaTitle from '../components/MegaTitle.astro';
+---
+
+<Base title="Not found">
+  <header class="page-head wrap nf">
+    <MegaTitle text="404" label="Page not found" />
+    <p class="lede">This page left early. The line-up, schedule and tickets are all still here.</p>
+    <p class="nf__links">
+      <a class="btn btn--acid" href="/">Home</a>
+      <a class="btn" href="/schedule/">Schedule</a>
+    </p>
+  </header>
+</Base>
+
+<style>
+  .nf { min-height: 70vh; padding-bottom: 80px; }
+  .nf__links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+</style>

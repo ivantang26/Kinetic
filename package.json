@@ -1,0 +1,26 @@
+{
+  "name": "pulse-27",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build && node scripts/build-sw.mjs",
+    "preview": "astro preview",
+    "fonts": "python scripts/subset-fonts.py"
+  },
+  "dependencies": {
+    "@astrojs/preact": "^6.0.5",
+    "astro": "^7.3.5",
+    "gsap": "^3.15.0",
+    "preact": "^10.29.8"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@fontsource-variable/roboto-flex": "^5.3.0",
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "typescript": "^6.0.3",
+    "workbox-build": "^7.4.1"
+  }
+}

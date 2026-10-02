@@ -1,0 +1,113 @@
+---
+import { HEADLINERS, dayById, stageById } from '../data/festival';
+---
+
+<section class="hl section" aria-labelledby="hl-h">
+  <div class="wrap">
+    <h2 id="hl-h" class="label">Headliners</h2>
+    <ol role="list" class="hl__list">
+      {
+        HEADLINERS.map((a) => (
+          <li class="hl__item">
+            <h3 class="hl__name kt fit" data-fit="fill" aria-label={a.name}>
+              <span class="fit__inner" aria-hidden="true">{a.name}</span>
+            </h3>
+            <p class="hl__meta mono">
+              <span>{dayById[a.day].name.toUpperCase()} {dayById[a.day].label}</span>
+              <span>{stageById[a.stage].name.toUpperCase()}</span>
+              <span>{a.start}–{a.end}</span>
+            </p>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .hl__list {
+    display: grid;
+    gap: clamp(40px, 7vw, 120px);
+    margin-top: clamp(32px, 5vw, 72px);
+  }
+  .hl__name {
+    --wght: 800;
+    --wdth: 100;
+    --fit-wght: 800;
+    --fit-wdth: 100;
+    color: var(--fg);
+    line-height: 0.82;
+    font-size: 16vw; /* pre-JS fallback */
+    overflow: visible;
+  }
+  @media (min-width: 1100px) {
+    /* "Same, larger width axis" */
+    .hl__name { --wdth: 125; --fit-wdth: 125; }
+  }
+  .hl__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 24px;
+    margin-top: 16px;
+    color: var(--text);
+  }
+  .hl__meta span:first-child { color: var(--fg); }
+  .hl__name :global(.hl-ch) { will-change: transform, opacity; }
+</style>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { SplitText } from 'gsap/SplitText';
+  import { initFit } from '../lib/fit';
+  import { registerKinetic } from '../lib/kinetic';
+  import { motionAllowed, onMotionChange } from '../lib/motion';
+
+  gsap.registerPlugin(ScrollTrigger, SplitText);
+
+  const names = [...document.querySelectorAll<HTMLElement>('.hl__name')];
+  let splits: SplitText[] = [];
+  let tweens: gsap.core.Timeline[] = [];
+
+  /** FR-2: split into letters and rise in with scroll progress. */
+  function build() {
+    if (!motionAllowed() || splits.length) return;
+    names.forEach((name) => {
+      const inner = name.querySelector<HTMLElement>('.fit__inner')!;
+      // aria handled in markup: parent has aria-label, inner is aria-hidden.
+      const split = SplitText.create(inner, { type: 'chars', charsClass: 'hl-ch', aria: 'none' });
+      splits.push(split);
+      const tl = gsap.timeline({
+        scrollTrigger: { trigger: name, start: 'top 95%', end: 'top 50%', scrub: 0.5 },
+      });
+      // 20ms stagger per letter, rising 40% of its height with overshoot.
+      tl.from(split.chars, { yPercent: 40, opacity: 0, ease: 'back.out(2.2)', duration: 0.3, stagger: 0.02 });
+      tweens.push(tl);
+    });
+    window.dispatchEvent(new CustomEvent('pulse:refit'));
+  }
+
+  function destroy() {
+    tweens.forEach((t) => {
+      t.scrollTrigger?.kill();
+      t.kill();
+    });
+    splits.forEach((s) => s.revert());
+    tweens = [];
+    splits = [];
+    window.dispatchEvent(new CustomEvent('pulse:refit'));
+  }
+
+  build();
+  initFit();
+  onMotionChange(() => (motionAllowed() ? build() : destroy()));
+
+  let t = 0;
+  addEventListener('pulse:fitted', () => {
+    clearTimeout(t);
+    t = window.setTimeout(() => ScrollTrigger.refresh(), 120);
+  });
+
+  // Headliners claim the "one kinetic element" slot while on screen.
+  names.forEach((n) => registerKinetic(n, { start() {}, stop() {}, priority: 0.1 }));
+</script>

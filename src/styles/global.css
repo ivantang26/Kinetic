@@ -1,0 +1,347 @@
+/* ==========================================================================
+   PULSE 27 — kinetic type system
+   ========================================================================== */
+
+/* ---- Fonts (self-hosted, preloaded) ------------------------------------ */
+@font-face {
+  font-family: 'Pulse Flex';
+  src: url('/fonts/pulse-flex.woff2') format('woff2-variations'), url('/fonts/pulse-flex.woff2') format('woff2');
+  font-weight: 100 900;
+  font-stretch: 50% 150%;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter-400.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/jbmono-500.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+
+/* ---- Registered properties: colours transition, axes animate ----------- */
+@property --bg { syntax: '<color>'; inherits: true; initial-value: #0a0a0a; }
+@property --fg { syntax: '<color>'; inherits: true; initial-value: #d4ff3a; }
+@property --text { syntax: '<color>'; inherits: true; initial-value: #f7f7f2; }
+@property --muted { syntax: '<color>'; inherits: true; initial-value: #b9b9b1; }
+@property --accent { syntax: '<color>'; inherits: true; initial-value: #d4ff3a; }
+@property --on-accent { syntax: '<color>'; inherits: true; initial-value: #0a0a0a; }
+@property --surface { syntax: '<color>'; inherits: true; initial-value: #161616; }
+@property --line { syntax: '<color>'; inherits: true; initial-value: #3a3a38; }
+@property --wght { syntax: '<number>'; inherits: true; initial-value: 700; }
+@property --wdth { syntax: '<number>'; inherits: true; initial-value: 100; }
+@property --k { syntax: '<number>'; inherits: false; initial-value: 0; }
+
+/* ---- Tokens -------------------------------------------------------------- */
+:root {
+  --black: #0a0a0a;
+  --acid: #d4ff3a;
+  --red: #ff3b1f;
+  --blue: #2b4bff;
+  --white: #f7f7f2;
+
+  /* Friday / default theme */
+  --bg: var(--black);
+  --fg: var(--acid);
+  --text: var(--white);
+  --muted: #b9b9b1;
+  --accent: var(--acid);
+  --on-accent: var(--black);
+  --surface: #161616;
+  --line: #3a3a38;
+
+  --font-display: 'Pulse Flex', 'Arial Narrow', 'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
+
+  /* Type scale (mobile → wide) */
+  --fs-body: clamp(1rem, 0.96rem + 0.2vw, 1.125rem); /* 16 → 18 */
+  --fs-mono: clamp(0.875rem, 0.85rem + 0.12vw, 1rem); /* 14 → 16 */
+  --fs-headline: clamp(2.25rem, 1.1rem + 4.8vw, 6rem); /* 36 → 96 */
+  --fs-artist: clamp(1.75rem, 0.95rem + 4.3vw, 5.5rem); /* 28 → 88 */
+
+  --gutter: clamp(16px, 3.2vw, 48px);
+  --maxw: 1680px;
+  --nav-h: 64px;
+  --theme-ms: 400ms;
+
+  color-scheme: dark;
+  transition:
+    --bg var(--theme-ms) ease, --fg var(--theme-ms) ease, --text var(--theme-ms) ease,
+    --muted var(--theme-ms) ease, --accent var(--theme-ms) ease, --on-accent var(--theme-ms) ease,
+    --surface var(--theme-ms) ease, --line var(--theme-ms) ease;
+}
+
+/* Day themes (FR-5). Red passes 5.6:1 on black; blue is only ever a
+   background with white type on top. */
+:root[data-day='sat'] {
+  --fg: var(--red);
+  --accent: var(--red);
+  --on-accent: var(--black);
+}
+:root[data-day='sun'] {
+  --bg: var(--blue);
+  --fg: var(--white);
+  --muted: #e3e7ff;
+  --accent: var(--white);
+  --on-accent: var(--blue);
+  --surface: #1d37d8;
+  --line: #7086ff;
+}
+
+/* ---- Base ---------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--nav-h) + 16px);
+}
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.55;
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4, p, ul, ol, figure, dl, dd { margin: 0; }
+ul[role='list'], ol[role='list'] { list-style: none; padding: 0; }
+a { color: inherit; }
+img, svg { display: block; max-width: 100%; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+::selection { background: var(--accent); color: var(--on-accent); }
+
+:focus-visible {
+  outline: 3px solid var(--fg);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0;
+}
+.skip {
+  position: absolute; left: var(--gutter); top: -100px; z-index: 200;
+  background: var(--acid); color: var(--black);
+  padding: 12px 16px; font-family: var(--font-mono); font-weight: 500; text-decoration: none;
+}
+.skip:focus { top: 8px; }
+
+.wrap {
+  width: 100%;
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* ---- Static type (never animated) ---------------------------------------- */
+.mono {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: var(--fs-mono);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.caps { text-transform: uppercase; }
+.muted { color: var(--muted); }
+.lede { font-size: clamp(1.125rem, 1rem + 0.5vw, 1.375rem); line-height: 1.45; max-width: 46ch; }
+.prose { max-width: 62ch; }
+.prose p + p { margin-top: 1em; }
+
+.label {
+  display: flex; align-items: center; gap: 12px;
+  font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-mono);
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg);
+}
+.label::after { content: ''; flex: 1; height: 1px; background: currentColor; opacity: 0.4; }
+
+.headline {
+  font-family: var(--font-display);
+  font-size: var(--fs-headline);
+  font-variation-settings: 'wght' 800, 'wdth' 100;
+  line-height: 0.9;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: var(--fg);
+}
+
+/* ---- Buttons: colour changes only, they never move ---------------------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 48px; padding: 12px 22px;
+  border: 2px solid currentColor; border-radius: 999px;
+  background: transparent;
+  font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-mono);
+  letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none;
+  text-align: center;
+  transition: background-color 150ms, color 150ms, border-color 150ms;
+}
+.btn:hover { background: var(--text); border-color: var(--text); color: var(--bg); }
+.btn--acid { background: var(--acid); border-color: var(--acid); color: var(--black); }
+.btn--acid:hover { background: var(--white); border-color: var(--white); color: var(--black); }
+.btn--accent { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn--accent:hover { background: var(--text); border-color: var(--text); color: var(--bg); }
+.btn[disabled], .btn[aria-disabled='true'] { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+/* Chips (filters) */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  min-height: 44px; padding: 8px 16px;
+  border: 2px solid var(--line); border-radius: 999px;
+  background: transparent; color: var(--text);
+  font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-mono);
+  letter-spacing: 0.06em; text-transform: uppercase;
+  transition: background-color 150ms, color 150ms, border-color 150ms;
+}
+.chip:hover { border-color: var(--text); }
+.chip[aria-pressed='true'], .chip[aria-selected='true'] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+
+/* ==========================================================================
+   Kinetic type
+   Everything that moves carries `.kt`. The axis state lives in two registered
+   properties, --wght and --wdth, which CSS animations and JS write to.
+   ========================================================================== */
+.display, .kt {
+  font-family: var(--font-display);
+  font-weight: normal;
+  font-synthesis: none;
+  font-variation-settings: 'wght' var(--wght), 'wdth' var(--wdth);
+  text-transform: uppercase;
+  line-height: 0.86;
+  letter-spacing: -0.01em;
+}
+
+/* Fit-text: a fixed-size box. Font-size is written by fit.ts; line-height
+   is in em so the box height depends only on font-size, never on axes. */
+/* inline-size containment: the text's width never feeds back into the box
+   (otherwise a fitted name inside a grid/flex item widens its own track). */
+.fit { display: block; white-space: nowrap; contain: inline-size; min-width: 0; }
+.fit__inner { display: inline-block; }
+.is-measuring, .is-measuring * {
+  font-variation-settings: 'wght' var(--m-wght), 'wdth' var(--m-wdth) !important;
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+/* Cursor-reactive / wave letters. --k (0–1) comes from JS or the wave. */
+.mega {
+  --rest-wght: 500;
+  --fit-wght: var(--rest-wght);
+  --fit-wdth: 100;
+  color: var(--fg);
+}
+.mega .ch {
+  display: inline;
+  --wght: calc(var(--rest-wght) + (900 - var(--rest-wght)) * var(--k));
+  --wdth: calc(100 + (var(--comp-wdth, 100) - 100) * var(--k));
+  font-variation-settings: 'wght' var(--wght), 'wdth' var(--wdth);
+  transition: --k 450ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.mega.is-kinetic:not(.is-wave) .ch { transition: none; }
+/* Touch: slow automatic wave. Each letter bumps for 1.5s of a 5s loop, so the
+   whole word rests fully legible for well over 1.5s every cycle. */
+.mega.is-wave .ch { animation: letter-wave 5s cubic-bezier(0.45, 0, 0.55, 1) infinite; animation-delay: calc(var(--i) * 110ms); }
+@keyframes letter-wave {
+  0% { --k: 0; }
+  15% { --k: 1; }
+  30%, 100% { --k: 0; }
+}
+
+/* ---- Calm mode + reduced motion: everything rests at 700 / 100 ---------- */
+html[data-calm='on'] .kt,
+html[data-calm='on'] .kt * {
+  --wght: 700 !important;
+  --wdth: 100 !important;
+  --k: 0 !important;
+  animation: none !important;
+  transition: none !important;
+}
+html[data-calm='on'] [data-fit] { --fit-wght: 700 !important; --fit-wdth: 100 !important; }
+@media (prefers-reduced-motion: reduce) {
+  .kt, .kt * {
+    --wght: 700 !important;
+    --wdth: 100 !important;
+    --k: 0 !important;
+    animation: none !important;
+    transition: none !important;
+  }
+  [data-fit] { --fit-wght: 700 !important; --fit-wdth: 100 !important; }
+}
+
+/* ---- Page-transition sweep --------------------------------------------- */
+.sweep {
+  position: fixed; inset: 0; z-index: 150;
+  display: grid; place-items: center;
+  background: var(--accent); color: var(--on-accent);
+  transform: translateX(101%);
+  pointer-events: none;
+  visibility: hidden;
+  overflow: hidden;
+  contain: strict;
+}
+.sweep__word {
+  font-family: var(--font-display);
+  font-variation-settings: 'wght' 900, 'wdth' 100;
+  text-transform: uppercase;
+  white-space: nowrap;
+  line-height: 0.8;
+  font-size: calc(94vw / (var(--chars, 6) * 0.66));
+}
+html.sweep-go .sweep { visibility: visible; transform: translateX(0); transition: transform 250ms cubic-bezier(0.7, 0, 0.3, 1); }
+html.sweep-in .sweep { visibility: visible; transform: translateX(0); }
+html.sweep-in.sweep-out .sweep { transform: translateX(-101%); transition: transform 250ms cubic-bezier(0.7, 0, 0.3, 1); }
+
+/* ---- Sections ------------------------------------------------------------ */
+.section { padding-block: clamp(64px, 10vw, 160px); }
+.section--tight { padding-block: clamp(40px, 6vw, 96px); }
+.section__head { display: grid; gap: 20px; margin-bottom: clamp(32px, 5vw, 72px); }
+.rule { border: 0; border-top: 1px solid var(--line); margin: 0; }
+
+/* Page header for inner pages */
+.page-head { padding-top: clamp(24px, 4vw, 56px); padding-bottom: clamp(24px, 4vw, 48px); }
+.page-head .mega { margin-bottom: clamp(20px, 3vw, 40px); }
+.page-head__row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 24px; }
+
+/* Card surfaces */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: clamp(20px, 2.4vw, 32px);
+}
+
+/* Offline / status pill */
+.pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 12px; border-radius: 999px;
+  border: 1px solid var(--line);
+  font-family: var(--font-mono); font-weight: 500; font-size: 0.8125rem;
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+
+/* Forms */
+.field { display: grid; gap: 8px; }
+.field label { font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-mono); text-transform: uppercase; letter-spacing: 0.06em; }
+.input, .select {
+  min-height: 52px; width: 100%;
+  padding: 12px 16px;
+  background: transparent; color: var(--text);
+  border: 2px solid var(--line); border-radius: 14px;
+  font-size: 1rem;
+}
+.input:focus-visible, .select:focus-visible { border-color: var(--fg); outline-offset: 2px; }
+.select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%); background-position: calc(100% - 22px) 50%, calc(100% - 16px) 50%; background-size: 6px 6px; background-repeat: no-repeat; padding-right: 44px; }
+.select option { background: var(--black); color: var(--white); }

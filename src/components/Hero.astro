@@ -1,0 +1,149 @@
+---
+import { DATE_RANGE, FESTIVAL } from '../data/festival';
+const meta = `${DATE_RANGE} · ${FESTIVAL.venue} · ${FESTIVAL.city}`.toUpperCase();
+---
+
+<section class="hero" aria-labelledby="hero-h">
+  <div class="hero__stage wrap">
+    <h1 id="hero-h" class="hero__word kt" aria-label="PULSE 27">
+      <span class="hero__row" aria-hidden="true"><span class="hero__line">PUL</span><span class="hero__line">SE</span></span>
+    </h1>
+  </div>
+  <div class="hero__foot wrap">
+    <p class="hero__meta mono">{meta}</p>
+    <p class="hero__lede">Three days of music and design. Sixty artists, twelve talks, one park.</p>
+    <div class="hero__cta">
+      <a class="btn btn--acid" href="/tickets/">Get tickets</a>
+      <a class="btn" href="/lineup/">See the line-up</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    min-height: calc(100svh - var(--nav-h));
+    display: grid;
+    grid-template-rows: 1fr auto;
+    padding-bottom: clamp(24px, 4vw, 48px);
+  }
+  .hero__stage {
+    display: grid;
+    align-items: center;
+    padding-block: clamp(16px, 4vh, 48px);
+  }
+  .hero__word {
+    color: var(--fg);
+    line-height: 0.8;
+    font-size: 22vw; /* pre-JS fallback; hero script fits it exactly */
+    text-align: center;
+    white-space: nowrap;
+    margin: 0;
+    contain: inline-size;
+  }
+  .hero__row { display: inline-block; }
+  .hero__line {
+    display: inline;
+    --wght: 900;
+    --wdth: var(--hi-wdth, 100);
+    font-variation-settings: 'wght' var(--wght), 'wdth' var(--wdth);
+  }
+  /* Mobile: PUL / SE over two lines */
+  @media (max-width: 599px) {
+    .hero__word { font-size: 40vw; }
+    .hero__line { display: block; width: fit-content; margin-inline: auto; }
+  }
+  @media (min-width: 600px) and (max-width: 1099px) {
+    .hero__word { font-size: 20vw; }
+  }
+  @media (min-width: 1100px) {
+    .hero__word { font-size: 18vw; }
+  }
+
+  /* 2-second loop = one bar at 120 BPM: a big hit on beat 1, a lighter one
+     on beat 3. Width counter-moves so the word keeps filling the box. */
+  .hero__word.is-kinetic .hero__line { animation: hero-pulse 2s linear infinite; }
+  @keyframes hero-pulse {
+    0% { --wght: 900; --wdth: var(--hi-wdth, 100); animation-timing-function: cubic-bezier(0.3, 0, 0.5, 1); }
+    45% { --wght: 300; --wdth: var(--lo-wdth, 100); }
+    50% { --wght: 300; --wdth: var(--lo-wdth, 100); animation-timing-function: cubic-bezier(0.1, 0.8, 0.2, 1); }
+    55% { --wght: 640; --wdth: var(--mid-wdth, 100); animation-timing-function: cubic-bezier(0.3, 0, 0.5, 1); }
+    93% { --wght: 300; --wdth: var(--lo-wdth, 100); animation-timing-function: cubic-bezier(0.1, 0.8, 0.2, 1); }
+    100% { --wght: 900; --wdth: var(--hi-wdth, 100); }
+  }
+
+  .hero__foot {
+    display: grid;
+    gap: 16px;
+    align-items: end;
+  }
+  .hero__meta {
+    color: var(--fg);
+    font-size: clamp(0.875rem, 0.8rem + 0.45vw, 1.25rem);
+    letter-spacing: 0.04em;
+  }
+  .hero__lede { max-width: 36ch; color: var(--text); }
+  .hero__cta { display: flex; flex-wrap: wrap; gap: 12px; }
+  @media (min-width: 900px) {
+    .hero__foot { grid-template-columns: 1fr auto auto; gap: 32px; }
+    .hero__meta { grid-column: 1 / -1; }
+  }
+</style>
+
+<script>
+  import { displayFontReady, measureBatch, solveWdth } from '../lib/fit';
+  import { registerKinetic } from '../lib/kinetic';
+  import { motionAllowed, onMotionChange } from '../lib/motion';
+
+  const word = document.querySelector<HTMLElement>('.hero__word');
+  const row = word?.querySelector<HTMLElement>('.hero__row');
+  const lines = row ? [...row.querySelectorAll<HTMLElement>('.hero__line')] : [];
+  const stacked = matchMedia('(max-width: 599px)');
+
+  /**
+   * Fit the word edge to edge at its heaviest state, then solve the width
+   * axis for the light and mid states so the pulse never changes the box.
+   */
+  function layout() {
+    if (!word || !row) return;
+    const units = stacked.matches ? lines : [row];
+    for (const u of [row, ...lines]) {
+      u.style.removeProperty('--hi-wdth');
+      u.style.removeProperty('--mid-wdth');
+      u.style.removeProperty('--lo-wdth');
+    }
+    const avail = word.clientWidth;
+    if (!avail) return;
+    const moving = motionAllowed();
+    const peak = moving ? 900 : 700;
+    const widest = Math.max(...measureBatch(units.map((u) => [u, peak, 100])));
+    const size = (avail / widest) * 100 * 0.995;
+    word.style.fontSize = `${size}px`;
+    if (!moving) return;
+    const goal = (avail / size) * 100;
+    for (const u of units) {
+      u.style.setProperty('--hi-wdth', String(solveWdth(u, 900, goal)));
+      u.style.setProperty('--mid-wdth', String(solveWdth(u, 640, goal)));
+      u.style.setProperty('--lo-wdth', String(solveWdth(u, 300, goal)));
+    }
+  }
+
+  if (word) {
+    let queued = 0;
+    const schedule = () => {
+      cancelAnimationFrame(queued);
+      queued = requestAnimationFrame(layout);
+    };
+    layout();
+    displayFontReady().then(layout); // direct: rAF may be throttled while hidden
+    let lastW = word.clientWidth;
+    new ResizeObserver(() => {
+      if (word.clientWidth !== lastW) {
+        lastW = word.clientWidth;
+        schedule();
+      }
+    }).observe(word);
+    onMotionChange(schedule);
+    // CSS drives the loop; the manager only decides whether it may run.
+    registerKinetic(word, { start() {}, stop() {} });
+  }
+</script>

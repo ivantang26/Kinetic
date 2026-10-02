@@ -1,0 +1,98 @@
+---
+import { DAYS, TALKS } from '../data/festival';
+interface Props {
+  /** Show every session (line-up page) or a teaser (home). */
+  full?: boolean;
+}
+const { full = false } = Astro.props;
+const byDay = DAYS.map((d) => ({ day: d, sessions: TALKS.filter((t) => t.day === d.id).slice(0, full ? 99 : 2) }));
+---
+
+<section class="talks section" aria-labelledby="talks-h">
+  <div class="wrap">
+    <div class="section__head">
+      <p class="label">Forum · included with every ticket</p>
+      <h2 id="talks-h" class="headline">Talks &amp; workshops</h2>
+      <p class="lede">
+        Twelve sessions on type, motion, print and making things loud. Workshops are hands-on and capped at 40
+        people; weekend pass holders book first.
+      </p>
+    </div>
+    <div class="talks__grid">
+      {
+        byDay.map(({ day, sessions }) => (
+          <div class:list={['talks__day', `talks__day--${day.id}`]}>
+            <h3 class="talks__dayname mono">
+              <span class="talks__swatch" aria-hidden="true" />
+              {day.name} {day.label}
+            </h3>
+            <ul role="list">
+              {sessions.map((s) => (
+                <li class="talk">
+                  <p class="talk__time mono">
+                    {s.start}–{s.end} · {s.genre}
+                  </p>
+                  <p class="talk__title">{s.name}</p>
+                  <p class="talk__host muted">{s.host}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+    {
+      !full && (
+        <p class="talks__more">
+          <a class="btn" href="/schedule/">
+            See every session in the schedule
+          </a>
+        </p>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .talks__grid {
+    display: grid;
+    gap: 32px;
+  }
+  @media (min-width: 900px) {
+    .talks__grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  .talks__dayname {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--line);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  /* Talks share the day colours (open question in the PRD: resolved this way). */
+  .talks__swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1px solid var(--text);
+  }
+  .talks__day--fri .talks__swatch { background: var(--acid); }
+  .talks__day--sat .talks__swatch { background: var(--red); }
+  .talks__day--sun .talks__swatch { background: var(--blue); }
+  .talk {
+    display: grid;
+    gap: 4px;
+    padding-block: 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  .talk__time { color: var(--fg); }
+  .talk__title {
+    font-family: var(--font-display);
+    font-variation-settings: 'wght' 750, 'wdth' 100;
+    font-size: clamp(1.5rem, 1.1rem + 1.2vw, 2.25rem);
+    line-height: 1;
+    text-transform: uppercase;
+  }
+  .talks__more { margin-top: 40px; }
+</style>

@@ -1,0 +1,196 @@
+---
+import Base from '../layouts/Base.astro';
+import MegaTitle from '../components/MegaTitle.astro';
+import TalksTeaser from '../components/TalksTeaser.astro';
+import { DAYS, GENRES, LINEUP, actMeta } from '../data/festival';
+---
+
+<Base title="Line-up" description="All 60 PULSE 27 artists across Friday, Saturday and Sunday, filterable by day and genre.">
+  <header class="page-head wrap">
+    <MegaTitle text="Line-up" />
+    <p class="lede">
+      {LINEUP.length} artists over three days. Hover or tap a name to see the day, stage and time. Pick a day and the
+      whole site switches to that day's colour.
+    </p>
+  </header>
+
+  <div class="wrap lu-filters">
+    <div class="chips" role="group" aria-label="Filter by day">
+      <button type="button" class="chip" data-filter-day="all" aria-pressed="true">All days</button>
+      {DAYS.map((d) => <button type="button" class="chip" data-filter-day={d.id} aria-pressed="false">{d.name}</button>)}
+    </div>
+    <div class="field lu-genre">
+      <label for="genre">Genre</label>
+      <select id="genre" class="select">
+        <option value="">All genres</option>
+        {GENRES.map((g) => <option value={g}>{g}</option>)}
+      </select>
+    </div>
+    <p class="lu-count mono" role="status" data-count>{LINEUP.length} artists</p>
+  </div>
+
+  <div class="wrap lu">
+    {
+      DAYS.map((d) => (
+        <section class="lu-day" data-day-group={d.id} aria-labelledby={`lu-${d.id}`}>
+          <h2 id={`lu-${d.id}`} class="label">
+            {d.name} {d.label}
+          </h2>
+          <ul role="list" class="lu-list">
+            {LINEUP.filter((a) => a.day === d.id).map((a) => (
+              <li class:list={['artist', a.headliner && 'artist--headliner']} data-day={a.day} data-genre={a.genre}>
+                <button type="button" class="artist__btn" aria-expanded="false" aria-controls={`m-${a.id}`}>
+                  <span class="artist__name kt fit" data-fit={a.headliner ? 'fill' : 'cap'}>
+                    <span class="fit__inner">{a.name}</span>
+                  </span>
+                </button>
+                <p class="artist__meta mono" id={`m-${a.id}`}>
+                  {actMeta(a)} · {a.genre.toUpperCase()}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+    <div class="lu-empty" data-empty hidden>
+      <p class="lede">No artists match those filters.</p>
+      <button type="button" class="btn" data-clear>Clear filters</button>
+    </div>
+  </div>
+
+  <TalksTeaser full />
+</Base>
+
+<style>
+  .lu-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 16px 24px;
+    padding-block: 8px 24px;
+    border-bottom: 1px solid var(--line);
+  }
+  .lu-genre { min-width: 220px; }
+  .lu-count { margin-left: auto; color: var(--muted); padding-bottom: 14px; }
+  .lu { padding-block: clamp(32px, 5vw, 64px); }
+  .lu-day + .lu-day { margin-top: clamp(48px, 7vw, 96px); }
+  .lu-day .label { margin-bottom: clamp(12px, 2vw, 24px); }
+  .lu-list { display: grid; }
+
+  .artist { border-bottom: 1px solid var(--line); }
+  .artist__btn {
+    display: block;
+    width: 100%;
+    padding: 0.18em 0 0;
+    border: 0;
+    background: none;
+    color: var(--text);
+    text-align: inherit;
+  }
+  /* Alternate alignment down the visible list, like a festival poster. */
+  .lu-list > li:nth-child(even of :not([hidden])) { text-align: right; }
+
+  .artist__name {
+    --wght: 700;
+    --wdth: 100;
+    --fit-wght: 700;
+    --fit-wdth: 150; /* measured at full stretch, so hover never overflows */
+    font-size: var(--fs-artist);
+    line-height: 0.95;
+    transition: --wdth 250ms cubic-bezier(0.3, 0.7, 0.2, 1), color 150ms;
+  }
+  .artist--headliner .artist__name { --wght: 900; --fit-wght: 900; color: var(--fg); }
+  /* Stretch on hover / tap / keyboard focus (only where text is >= 32px). */
+  .artist[data-stretch]:hover .artist__name,
+  .artist[data-stretch] .artist__btn:focus-visible .artist__name,
+  .artist[data-stretch] .artist__btn[aria-expanded='true'] .artist__name { --wdth: 150; }
+  .artist:hover .artist__name,
+  .artist__btn[aria-expanded='true'] .artist__name { color: var(--fg); }
+
+  /* Meta line keeps its space so nothing below shifts when it appears. */
+  .artist__meta {
+    min-height: 1.6em;
+    padding-block: 6px 12px;
+    color: var(--fg);
+    visibility: hidden;
+  }
+  .artist:hover .artist__meta,
+  .artist:focus-within .artist__meta,
+  .artist__btn[aria-expanded='true'] + .artist__meta { visibility: visible; }
+
+  .lu-empty { display: grid; gap: 16px; justify-items: start; }
+</style>
+
+<script>
+  import { initFit } from '../lib/fit';
+  import { getDay, setDay, isDay, type ThemeDay } from '../lib/theme';
+
+  const dayBtns = [...document.querySelectorAll<HTMLButtonElement>('[data-filter-day]')];
+  const genreSel = document.getElementById('genre') as HTMLSelectElement;
+  const items = [...document.querySelectorAll<HTMLLIElement>('.artist')];
+  const groups = [...document.querySelectorAll<HTMLElement>('[data-day-group]')];
+  const count = document.querySelector<HTMLElement>('[data-count]')!;
+  const empty = document.querySelector<HTMLElement>('[data-empty]')!;
+
+  const q = new URLSearchParams(location.search);
+  let day: ThemeDay = isDay(q.get('day')) ? (q.get('day') as ThemeDay) : getDay();
+  let genre = q.get('genre') ?? '';
+  if (genre && ![...genreSel.options].some((o) => o.value === genre)) genre = '';
+
+  function apply() {
+    let shown = 0;
+    for (const li of items) {
+      const ok = (day === 'all' || li.dataset.day === day) && (!genre || li.dataset.genre === genre);
+      li.hidden = !ok;
+      if (ok) shown++;
+    }
+    for (const g of groups) g.hidden = !g.querySelector('.artist:not([hidden])');
+    dayBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filterDay === day)));
+    genreSel.value = genre;
+    count.textContent = `${shown} ${shown === 1 ? 'artist' : 'artists'}`;
+    empty.hidden = shown > 0;
+
+    setDay(day); // FR-5: the whole site follows the day filter
+    const url = new URL(location.href);
+    day === 'all' ? url.searchParams.delete('day') : url.searchParams.set('day', day);
+    genre ? url.searchParams.set('genre', genre) : url.searchParams.delete('genre');
+    history.replaceState(null, '', url);
+    window.dispatchEvent(new CustomEvent('pulse:refit'));
+  }
+
+  dayBtns.forEach((b) =>
+    b.addEventListener('click', () => {
+      day = b.dataset.filterDay as ThemeDay;
+      apply();
+    }),
+  );
+  genreSel.addEventListener('change', () => {
+    genre = genreSel.value;
+    apply();
+  });
+  document.querySelector('[data-clear]')?.addEventListener('click', () => {
+    day = 'all';
+    genre = '';
+    apply();
+    dayBtns[0].focus();
+  });
+
+  // Tap / click toggles details (hover shows them too on desktop).
+  document.querySelectorAll<HTMLButtonElement>('.artist__btn').forEach((btn) =>
+    btn.addEventListener('click', () => {
+      btn.setAttribute('aria-expanded', String(btn.getAttribute('aria-expanded') !== 'true'));
+    }),
+  );
+
+  // Legibility rule: text never animates below 32px on screen.
+  addEventListener('pulse:fitted', () => {
+    for (const li of items) {
+      const name = li.querySelector<HTMLElement>('.artist__name')!;
+      li.toggleAttribute('data-stretch', parseFloat(name.style.fontSize) >= 32);
+    }
+  });
+
+  apply();
+  initFit();
+</script>

@@ -1,0 +1,153 @@
+---
+import Base from '../layouts/Base.astro';
+import MegaTitle from '../components/MegaTitle.astro';
+import { DATE_RANGE, HEADLINERS, LINEUP, TALKS } from '../data/festival';
+import { TIERS } from '../data/tickets';
+
+const facts: [string, string][] = [
+  ['Dates', DATE_RANGE],
+  ['Venue', 'Victoria Park, London E9'],
+  ['Capacity', `${TIERS.reduce((n, t) => n + t.allocation, 0).toLocaleString('en-GB')} tickets`],
+  ['Programme', `${LINEUP.length} artists, ${TALKS.length} talks and workshops, 4 stages`],
+  ['Headliners', HEADLINERS.map((h) => h.name).join(', ')],
+];
+const assets = [
+  { file: '/press/pulse27-wordmark-acid.svg', label: 'Wordmark, acid on transparent', swatch: 'acid' },
+  { file: '/press/pulse27-wordmark-black.svg', label: 'Wordmark, black on transparent', swatch: 'black' },
+  { file: '/press/pulse27-wordmark-white.svg', label: 'Wordmark, white on transparent', swatch: 'white' },
+];
+const colours = [
+  { name: 'Black', hex: '#0A0A0A', v: '--black' },
+  { name: 'Acid', hex: '#D4FF3A', v: '--acid' },
+  { name: 'Red', hex: '#FF3B1F', v: '--red' },
+  { name: 'Blue', hex: '#2B4BFF', v: '--blue' },
+  { name: 'White', hex: '#F7F7F2', v: '--white' },
+];
+---
+
+<Base title="Press" description="PULSE 27 press kit: key facts, logos, colours and press contacts.">
+  <header class="page-head wrap">
+    <MegaTitle text="Press" />
+    <p class="lede">Key facts, logos and the people to talk to. Accreditation requests close 15 May 2027.</p>
+  </header>
+
+  <section class="wrap section--tight" aria-labelledby="facts-h">
+    <h2 id="facts-h" class="label">Key facts</h2>
+    <dl class="facts">
+      {
+        facts.map(([k, v]) => (
+          <div>
+            <dt class="mono">{k}</dt>
+            <dd>{v}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
+  <section class="wrap section--tight" aria-labelledby="assets-h">
+    <h2 id="assets-h" class="label">Logos</h2>
+    <ul role="list" class="assets">
+      {
+        assets.map((a) => (
+          <li class:list={['asset', `asset--${a.swatch}`]}>
+            <div class="asset__preview">
+              <img src={a.file} alt="" width="320" height="80" loading="lazy" />
+            </div>
+            <a class="asset__link mono" href={a.file} download data-no-sweep>
+              Download SVG<span class="sr-only">: {a.label}</span>
+            </a>
+            <p class="muted">{a.label}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="wrap section--tight" aria-labelledby="colours-h">
+    <h2 id="colours-h" class="label">Colours</h2>
+    <ul role="list" class="colours">
+      {
+        colours.map((c) => (
+          <li>
+            <span class="colours__chip" style={`background:var(${c.v})`} />
+            <span class="mono">
+              {c.name} {c.hex}
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="muted colours__note">
+      Each day has its own colour: Friday acid, Saturday red, Sunday blue. Blue is only used for large type, or as a
+      background with white text.
+    </p>
+  </section>
+
+  <section class="wrap section" aria-labelledby="contacts-h">
+    <h2 id="contacts-h" class="label">Contacts</h2>
+    <div class="contacts">
+      <div>
+        <h3>Press &amp; accreditation</h3>
+        <p class="mono">press@pulse27.example</p>
+      </div>
+      <div>
+        <h3>Partnerships</h3>
+        <p class="mono">partners@pulse27.example</p>
+      </div>
+      <div>
+        <h3>Artist liaison</h3>
+        <p class="mono">artists@pulse27.example</p>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .facts { display: grid; margin-top: 16px; }
+  .facts > div {
+    display: grid;
+    gap: 4px 32px;
+    padding-block: 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .facts dt { color: var(--fg); text-transform: uppercase; letter-spacing: 0.06em; }
+  @media (min-width: 800px) {
+    .facts > div { grid-template-columns: 12rem 1fr; }
+  }
+  .assets {
+    display: grid;
+    gap: 16px;
+    margin-top: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  }
+  .asset { display: grid; gap: 10px; min-width: 0; }
+  .asset__preview img { width: 100%; height: auto; }
+  .asset__preview {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 16 / 7;
+    padding: 24px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+  }
+  .asset--acid .asset__preview { background: var(--black); }
+  .asset--black .asset__preview { background: var(--acid); }
+  .asset--white .asset__preview { background: var(--blue); }
+  .asset__link { color: var(--fg); text-underline-offset: 3px; }
+  .colours { display: flex; flex-wrap: wrap; gap: 16px 32px; margin-top: 24px; }
+  .colours li { display: flex; align-items: center; gap: 12px; }
+  .colours__chip { width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--line); }
+  .colours__note { margin-top: 20px; max-width: 64ch; }
+  .contacts { display: grid; gap: 24px; margin-top: 24px; }
+  @media (min-width: 800px) {
+    .contacts { grid-template-columns: repeat(3, 1fr); }
+  }
+  .contacts h3 {
+    font-family: var(--font-display);
+    font-variation-settings: 'wght' 800, 'wdth' 100;
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+</style>

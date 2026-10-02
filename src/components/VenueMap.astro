@@ -1,0 +1,113 @@
+---
+/**
+ * Stylised site map, drawn inline (no image request). Markers are numbered and
+ * explained in an HTML legend, so labels stay readable at phone width.
+ */
+const stages = [
+  { n: '1', x: 700, y: 222, name: 'Main Stage' },
+  { n: '2', x: 488, y: 196, name: 'The Hangar' },
+  { n: '3', x: 836, y: 272, name: 'Low End' },
+  { n: '4', x: 360, y: 318, name: 'Forum (talks & workshops)' },
+];
+const gates = [
+  { n: 'A', x: 150, y: 372, name: 'West Gate: step-free, accessible entrance' },
+  { n: 'B', x: 905, y: 205, name: 'East Gate: nearest Hackney Wick' },
+];
+const stations = [
+  { n: 'M', x: 150, y: 520, name: 'Mile End (Central, District, H&C): 15 min walk to Gate A' },
+  { n: 'H', x: 955, y: 420, name: 'Hackney Wick (Overground): 10 min walk to Gate B' },
+  { n: 'Ho', x: 850, y: 48, name: 'Homerton (Overground): 12 min walk to Gate B' },
+];
+---
+
+<figure class="map">
+  <svg viewBox="0 0 1000 560" role="img" aria-labelledby="map-t map-d">
+    <title id="map-t">PULSE 27 site map, Victoria Park</title>
+    <desc id="map-d">
+      Four stages sit inside the park, with gates to the west and east. Mile End station is south-west, Hackney Wick
+      is east, and Homerton is north-east. Full details are in the list that follows the map.
+    </desc>
+    <!-- canal -->
+    <path class="map__canal" d="M20 520 C 220 500, 420 470, 600 430 S 900 350, 990 330" />
+    <!-- park -->
+    <path class="map__park" d="M92 330 L 210 176 L 420 112 L 640 88 L 858 146 L 948 246 L 884 334 L 700 384 L 480 432 L 262 470 L 118 420 Z" />
+    <!-- paths -->
+    <path class="map__path" d="M150 372 C 320 300, 520 250, 905 205" />
+    <path class="map__path" d="M262 460 C 330 360, 380 260, 420 120" />
+    <path class="map__path" d="M640 92 C 660 220, 690 300, 700 380" />
+    <!-- lakes -->
+    <ellipse class="map__lake" cx="250" cy="300" rx="62" ry="34" transform="rotate(-18 250 300)" />
+    <ellipse class="map__lake" cx="590" cy="310" rx="74" ry="30" transform="rotate(-10 590 310)" />
+    {
+      stations.map((s) => (
+        <g class="map__station">
+          <rect x={s.x - 34} y={s.y - 24} width="68" height="48" rx="8" />
+          <text x={s.x} y={s.y + 9}>{s.n}</text>
+        </g>
+      ))
+    }
+    {
+      gates.map((g) => (
+        <g class="map__gate">
+          <rect x={g.x - 26} y={g.y - 26} width="52" height="52" rx="4" transform={`rotate(45 ${g.x} ${g.y})`} />
+          <text x={g.x} y={g.y + 10}>{g.n}</text>
+        </g>
+      ))
+    }
+    {
+      stages.map((s) => (
+        <g class="map__stage">
+          <circle cx={s.x} cy={s.y} r="34" />
+          <text x={s.x} y={s.y + 11}>{s.n}</text>
+        </g>
+      ))
+    }
+  </svg>
+  <figcaption>
+    <ul role="list" class="map__legend mono">
+      {stages.map((s) => <li><span class="key key--stage">{s.n}</span>{s.name}</li>)}
+      {gates.map((g) => <li><span class="key key--gate">{g.n}</span>{g.name}</li>)}
+      {stations.map((s) => <li><span class="key key--station">{s.n}</span>{s.name}</li>)}
+    </ul>
+  </figcaption>
+</figure>
+
+<style>
+  .map svg { width: 100%; height: auto; }
+  .map__park { fill: var(--surface); stroke: var(--fg); stroke-width: 3; }
+  .map__canal { fill: none; stroke: var(--muted); stroke-width: 10; stroke-linecap: round; opacity: 0.5; }
+  .map__path { fill: none; stroke: var(--line); stroke-width: 4; stroke-dasharray: 2 10; stroke-linecap: round; }
+  .map__lake { fill: var(--bg); stroke: var(--line); stroke-width: 2; }
+  .map text {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    text-anchor: middle;
+  }
+  .map__stage circle { fill: var(--accent); }
+  .map__stage text { fill: var(--on-accent); font-size: 32px; }
+  .map__gate rect { fill: var(--text); }
+  .map__gate text { fill: var(--bg); font-size: 28px; }
+  .map__station rect { fill: var(--bg); stroke: var(--text); stroke-width: 3; }
+  .map__station text { fill: var(--text); font-size: 26px; }
+  .map__legend {
+    display: grid;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  @media (min-width: 700px) {
+    .map__legend { grid-template-columns: 1fr 1fr; gap: 10px 32px; }
+  }
+  .map__legend li { display: flex; gap: 12px; align-items: baseline; }
+  .key {
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    min-width: 28px;
+    height: 28px;
+    padding-inline: 4px;
+    font-size: 0.8125rem;
+  }
+  .key--stage { background: var(--accent); color: var(--on-accent); border-radius: 50%; }
+  .key--gate { background: var(--text); color: var(--bg); }
+  .key--station { border: 2px solid var(--text); border-radius: 4px; }
+</style>

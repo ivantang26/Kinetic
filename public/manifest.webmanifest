@@ -1,0 +1,13 @@
+{
+  "name": "PULSE 27",
+  "short_name": "PULSE 27",
+  "description": "PULSE 27 schedule and My PULSE, offline on site.",
+  "start_url": "/schedule/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0A0A0A",
+  "theme_color": "#0A0A0A",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

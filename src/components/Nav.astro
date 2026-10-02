@@ -1,0 +1,240 @@
+---
+interface Props {
+  path: string;
+}
+const { path } = Astro.props;
+
+const links = [
+  { href: '/lineup/', label: 'Line-up' },
+  { href: '/schedule/', label: 'Schedule' },
+  { href: '/venue/', label: 'Venue & travel' },
+  { href: '/faq/', label: 'FAQ' },
+  { href: '/press/', label: 'Press' },
+];
+const current = (href: string) => (path === href ? 'page' : undefined);
+---
+
+<header class="nav">
+  <div class="nav__bar wrap">
+    <a class="nav__mark" href="/" aria-label="PULSE 27 home" aria-current={current('/')}>
+      PULSE<span>27</span>
+    </a>
+    <nav class="nav__links" aria-label="Main">
+      <ul role="list">
+        {links.map((l) => <li><a href={l.href} aria-current={current(l.href)}>{l.label}</a></li>)}
+      </ul>
+    </nav>
+    <div class="nav__actions">
+      <button class="calm-toggle" type="button" data-calm-toggle aria-pressed="false">
+        <span class="calm-toggle__dot" aria-hidden="true"></span>Calm
+      </button>
+      <a class="btn btn--acid nav__tickets" href="/tickets/" aria-current={current('/tickets/')}>Tickets</a>
+      <button class="nav__menu-btn" type="button" aria-haspopup="dialog" aria-controls="menu" data-menu-open>
+        Menu
+      </button>
+    </div>
+  </div>
+</header>
+
+<dialog class="menu" id="menu" aria-label="Menu">
+  <div class="menu__top wrap">
+    <span class="nav__mark" aria-hidden="true">PULSE<span>27</span></span>
+    <button class="nav__menu-btn" type="button" data-menu-close>Close</button>
+  </div>
+  <nav class="menu__links wrap" aria-label="Menu">
+    <ul role="list">
+      <li><a href="/" aria-current={current('/')}>Home</a></li>
+      {links.map((l) => <li><a href={l.href} aria-current={current(l.href)}>{l.label.replace(' & travel', '')}</a></li>)}
+      <li><a href="/tickets/" aria-current={current('/tickets/')}>Tickets</a></li>
+    </ul>
+  </nav>
+  <div class="menu__foot wrap">
+    <button class="calm-toggle" type="button" data-calm-toggle aria-pressed="false">
+      <span class="calm-toggle__dot" aria-hidden="true"></span>Calm mode
+    </button>
+    <p class="mono muted">Calm mode stops all moving type for this visit.</p>
+  </div>
+</dialog>
+
+<style>
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav__bar {
+    height: var(--nav-h);
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .nav__mark {
+    font-family: var(--font-display);
+    font-variation-settings: 'wght' 900, 'wdth' 120;
+    font-size: 1.625rem;
+    line-height: 1;
+    letter-spacing: -0.01em;
+    color: var(--fg);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .nav__mark span {
+    font-variation-settings: 'wght' 300, 'wdth' 120;
+    margin-left: 0.12em;
+  }
+  .nav__links {
+    display: none;
+    margin-right: auto;
+  }
+  .nav__links ul {
+    display: flex;
+    gap: clamp(16px, 2vw, 32px);
+  }
+  .nav__links a {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: var(--fs-mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding-block: 8px;
+    border-bottom: 2px solid transparent;
+    transition: border-color 150ms, color 150ms;
+  }
+  .nav__links a:hover { border-color: var(--line); }
+  .nav__links a[aria-current='page'] { color: var(--fg); border-color: var(--fg); }
+  .nav__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+  }
+  .nav__tickets { min-height: 40px; padding: 8px 18px; }
+  .nav__menu-btn {
+    min-height: 40px;
+    padding: 8px 16px;
+    background: transparent;
+    border: 2px solid var(--line);
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: var(--fs-mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .nav__menu-btn:hover { border-color: var(--text); }
+
+  .calm-toggle {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 8px 14px;
+    background: transparent;
+    border: 2px solid var(--line);
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: var(--fs-mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .calm-toggle:hover { border-color: var(--text); }
+  .calm-toggle__dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid currentColor;
+  }
+  .calm-toggle[aria-pressed='true'] { border-color: var(--fg); color: var(--fg); }
+  .calm-toggle[aria-pressed='true'] .calm-toggle__dot { background: currentColor; }
+
+  @media (max-width: 419px) {
+    .nav__bar { gap: 8px; }
+    .nav__mark { font-size: 1.3rem; }
+    .nav__actions { gap: 6px; }
+    .nav__tickets, .nav__menu-btn { padding-inline: 12px; letter-spacing: 0.02em; }
+  }
+  @media (min-width: 1100px) {
+    .nav__links { display: block; }
+    .nav__actions { margin-left: 0; }
+    .nav__menu-btn[data-menu-open] { display: none; }
+    .nav__actions .calm-toggle { display: inline-flex; }
+  }
+
+  /* Full-screen mega menu (mobile + tablet) */
+  .menu {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: var(--bg);
+    color: var(--text);
+  }
+  .menu[open] { display: flex; flex-direction: column; }
+  .menu::backdrop { background: var(--bg); }
+  .menu__top {
+    height: var(--nav-h);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--line);
+  }
+  .menu__links { flex: 1; padding-block: 24px; overflow-y: auto; }
+  .menu__links a {
+    display: block;
+    font-family: var(--font-display);
+    font-variation-settings: 'wght' 800, 'wdth' 100;
+    font-size: clamp(2.5rem, 12vw, 6rem);
+    line-height: 1;
+    padding-block: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+  .menu__links a[aria-current='page'] { color: var(--fg); }
+  .menu__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 16px;
+    padding-block: 20px calc(20px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line);
+  }
+  .menu__foot .calm-toggle { display: inline-flex; }
+</style>
+
+<script>
+  import { isCalm, prefersReduced, setCalm, onMotionChange } from '../lib/motion';
+
+  const toggles = document.querySelectorAll<HTMLButtonElement>('[data-calm-toggle]');
+  const sync = () => {
+    const reduced = prefersReduced();
+    toggles.forEach((b) => {
+      b.setAttribute('aria-pressed', String(isCalm() || reduced));
+      b.title = reduced ? 'Your device is set to reduce motion, so moving type is already off.' : 'Stop all moving type for this visit';
+    });
+  };
+  toggles.forEach((b) =>
+    b.addEventListener('click', () => {
+      if (prefersReduced()) return;
+      setCalm(!isCalm());
+      window.dispatchEvent(new CustomEvent('pulse:refit'));
+    }),
+  );
+  onMotionChange(sync);
+  sync();
+
+  const menu = document.getElementById('menu') as HTMLDialogElement | null;
+  const opener = document.querySelector<HTMLButtonElement>('[data-menu-open]');
+  opener?.addEventListener('click', () => menu?.showModal());
+  menu?.querySelector('[data-menu-close]')?.addEventListener('click', () => menu.close());
+  menu?.addEventListener('close', () => opener?.focus());
+  addEventListener('resize', () => {
+    if (menu?.open && innerWidth >= 1100) menu.close();
+  });
+</script>

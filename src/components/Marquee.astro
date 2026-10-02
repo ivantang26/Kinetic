@@ -1,0 +1,149 @@
+---
+import { LINEUP, dayById } from '../data/festival';
+
+// Desktop/tablet: three rows, one per day. Mobile: two rows of thirty.
+const byDay = ['fri', 'sat', 'sun'].map((d) => LINEUP.filter((a) => a.day === d));
+const rows3 = byDay.map((row, i) => ({ acts: row, dur: [78, 56, 94][i], dir: i % 2 ? 'right' : 'left' }));
+const half = Math.ceil(LINEUP.length / 2);
+const rows2 = [LINEUP.slice(0, half), LINEUP.slice(half)].map((acts, i) => ({ acts, dur: [110, 84][i], dir: i % 2 ? 'right' : 'left' }));
+const sets = [
+  { rows: rows3, cls: 'mq-set--3' },
+  { rows: rows2, cls: 'mq-set--2' },
+];
+---
+
+<section class="mq section--tight" aria-labelledby="mq-h" data-marquee>
+  <div class="wrap mq__head">
+    <h2 id="mq-h" class="label">The line-up · {LINEUP.length} artists</h2>
+    <button class="chip mq__toggle" type="button" data-mq-toggle>Pause</button>
+  </div>
+
+  <!-- Visual only. The loop needs a duplicate of every row, so the whole
+       visual is hidden from assistive tech and the list below is read instead. -->
+  <div class="mq__visual" aria-hidden="true">
+    {
+      sets.map((set) => (
+        <div class:list={['mq-set', set.cls]}>
+          {set.rows.map((row) => (
+            <div class="mq-row" data-dir={row.dir} style={`--dur:${row.dur}s`}>
+              <div class="mq-track">
+                {[0, 1].map((copy) => (
+                  <ul class:list={['mq-group', copy && 'mq-dup']}>
+                    {row.acts.map((a, j) => (
+                      <li class:list={['mq-item', j % 2 && 'mq-item--outline']}>
+                        {a.name}
+                        <span class="mq-sep">/</span>
+                      </li>
+                    ))}
+                  </ul>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ))
+    }
+  </div>
+
+  <ul class="sr-only">
+    {LINEUP.map((a) => <li>{a.name}, {dayById[a.day].name}</li>)}
+  </ul>
+
+  <div class="wrap mq__foot">
+    <a class="btn" href="/lineup/">Explore the full line-up</a>
+  </div>
+</section>
+
+<style>
+  .mq__head {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: clamp(20px, 3vw, 40px);
+  }
+  .mq__head .label { flex: 1; }
+  .mq__visual {
+    display: grid;
+    gap: clamp(4px, 1vw, 12px);
+    overflow: hidden;
+  }
+  .mq-set { display: grid; gap: clamp(4px, 1vw, 12px); }
+  .mq-set--2 { display: none; }
+  @media (max-width: 599px) {
+    .mq-set--3 { display: none; }
+    .mq-set--2 { display: grid; }
+  }
+  .mq-row { overflow: hidden; }
+  .mq-track {
+    display: flex;
+    width: max-content;
+    animation: mq var(--dur) linear infinite;
+  }
+  .mq-row[data-dir='right'] .mq-track { animation-direction: reverse; }
+  @keyframes mq {
+    to { transform: translate3d(-50%, 0, 0); }
+  }
+  .mq-group {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .mq-item {
+    font-family: var(--font-display);
+    font-variation-settings: 'wght' 800, 'wdth' 100;
+    font-size: clamp(2.5rem, 1.6rem + 5vw, 8rem); /* never below 32px */
+    line-height: 1.02;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--fg);
+  }
+  .mq-item--outline {
+    color: transparent;
+    -webkit-text-stroke: max(1.5px, 0.018em) var(--fg);
+  }
+  .mq-sep {
+    display: inline-block;
+    padding-inline: 0.3em;
+    color: var(--text);
+    -webkit-text-stroke: 0;
+    font-variation-settings: 'wght' 200, 'wdth' 100;
+  }
+
+  /* FR-3: pause on hover, focus, the button, and when off screen. */
+  .mq:hover .mq-track,
+  .mq:focus-within .mq-track,
+  .mq.is-paused .mq-track,
+  .mq.is-offscreen .mq-track { animation-play-state: paused; }
+
+  /* Calm mode / reduced motion: the marquee becomes a static poster. */
+  :global(html[data-calm='on']) .mq-track { animation: none; width: auto; flex-wrap: wrap; padding-inline: var(--gutter); }
+  :global(html[data-calm='on']) .mq-dup { display: none; }
+  :global(html[data-calm='on']) .mq-group { flex-wrap: wrap; }
+  :global(html[data-calm='on']) .mq__toggle { display: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .mq-track { animation: none; width: auto; flex-wrap: wrap; padding-inline: var(--gutter); }
+    .mq-dup { display: none; }
+    .mq-group { flex-wrap: wrap; }
+    .mq__toggle { display: none; }
+  }
+  .mq-item { font-size: clamp(2.5rem, 1.6rem + 5vw, 8rem); }
+  :global(html[data-calm='on']) .mq-item { font-size: clamp(2rem, 1.4rem + 3vw, 4.5rem); }
+  @media (prefers-reduced-motion: reduce) {
+    .mq-item { font-size: clamp(2rem, 1.4rem + 3vw, 4.5rem); }
+  }
+
+  .mq__foot { margin-top: clamp(24px, 4vw, 48px); }
+</style>
+
+<script>
+  const sec = document.querySelector<HTMLElement>('[data-marquee]');
+  const btn = sec?.querySelector<HTMLButtonElement>('[data-mq-toggle]');
+  if (sec && btn) {
+    btn.addEventListener('click', () => {
+      const paused = sec.classList.toggle('is-paused');
+      btn.textContent = paused ? 'Play' : 'Pause';
+    });
+    new IntersectionObserver(([e]) => sec.classList.toggle('is-offscreen', !e.isIntersecting)).observe(sec);
+  }
+</script>

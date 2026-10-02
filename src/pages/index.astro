@@ -1,0 +1,73 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import Headliners from '../components/Headliners.astro';
+import Marquee from '../components/Marquee.astro';
+import DayBands from '../components/DayBands.astro';
+import TalksTeaser from '../components/TalksTeaser.astro';
+import VenueMap from '../components/VenueMap.astro';
+import Newsletter from '../components/Newsletter.astro';
+import TicketTiers from '../islands/TicketTiers.tsx';
+import { TIERS, BASELINE_STATUS } from '../data/tickets';
+---
+
+<Base title="PULSE 27">
+  <Hero />
+  <Headliners />
+  <Marquee />
+  <DayBands />
+  <TalksTeaser />
+
+  <section class="section home-tickets" aria-labelledby="tix-h">
+    <div class="wrap">
+      <div class="section__head">
+        <p class="label">Tickets</p>
+        <h2 id="tix-h" class="headline">Pick your days</h2>
+        <p class="lede">Day tickets and weekend passes. Availability updates live from our ticketing partner.</p>
+      </div>
+      <TicketTiers client:visible tiers={TIERS} baseline={BASELINE_STATUS} variant="home" />
+    </div>
+  </section>
+
+  <section class="section home-venue" aria-labelledby="venue-h">
+    <div class="wrap home-venue__grid">
+      <div class="home-venue__text">
+        <p class="label">Venue</p>
+        <h2 id="venue-h" class="headline">Victoria Park, London E9</h2>
+        <ul role="list" class="home-venue__list">
+          <li><span class="mono">Tube</span> Mile End, 15 min walk to the West Gate</li>
+          <li><span class="mono">Overground</span> Hackney Wick, 10 min walk to the East Gate</li>
+          <li><span class="mono">Bike</span> 1,200 free racks at both gates</li>
+          <li><span class="mono">Access</span> Step-free West Gate, viewing decks at every stage</li>
+        </ul>
+        <a class="btn" href="/venue/">Venue &amp; travel</a>
+      </div>
+      <VenueMap />
+    </div>
+  </section>
+
+  <Newsletter />
+</Base>
+
+<style>
+  .home-tickets { border-top: 1px solid var(--line); }
+  .home-venue { border-top: 1px solid var(--line); }
+  .home-venue__grid { display: grid; gap: 48px; }
+  .home-venue__text { display: grid; gap: 24px; align-content: start; }
+  .home-venue__list { display: grid; gap: 0; }
+  .home-venue__list li {
+    display: grid;
+    grid-template-columns: 8.5em 1fr;
+    gap: 16px;
+    padding-block: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .home-venue__list .mono { color: var(--fg); text-transform: uppercase; padding-top: 2px; }
+  .home-venue .btn { justify-self: start; }
+  @media (max-width: 480px) {
+    .home-venue__list li { grid-template-columns: 1fr; gap: 2px; }
+  }
+  @media (min-width: 1000px) {
+    .home-venue__grid { grid-template-columns: 1fr 1.25fr; align-items: start; }
+  }
+</style>

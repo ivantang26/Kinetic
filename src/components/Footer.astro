@@ -1,0 +1,92 @@
+---
+import { DATE_RANGE } from '../data/festival';
+
+// Fictional partners, set as type-only wordmarks: no logo files to load.
+const sponsors = [
+  { name: 'Northline Audio', v: "'wght' 900, 'wdth' 60" },
+  { name: 'Grainhouse', v: "'wght' 300, 'wdth' 150" },
+  { name: 'Radio Moda', v: "'wght' 700, 'wdth' 100" },
+  { name: 'Parkside Cycles', v: "'wght' 500, 'wdth' 75" },
+  { name: 'Fieldnote Paper', v: "'wght' 200, 'wdth' 120" },
+  { name: 'Hackney Oat Co.', v: "'wght' 800, 'wdth' 130" },
+];
+---
+
+<footer class="footer">
+  <div class="wrap">
+    <section class="footer__sponsors" aria-labelledby="sponsors-h">
+      <h2 id="sponsors-h" class="label">Partners</h2>
+      <ul role="list" class="sponsors">
+        {sponsors.map((s) => <li style={`font-variation-settings:${s.v}`}>{s.name}</li>)}
+      </ul>
+    </section>
+
+    <div class="footer__grid">
+      <div class="footer__mark" aria-hidden="true">PULSE<span>27</span></div>
+      <nav aria-label="Footer">
+        <ul role="list" class="footer__links">
+          <li><a href="/lineup/">Line-up</a></li>
+          <li><a href="/schedule/">Schedule</a></li>
+          <li><a href="/tickets/">Tickets</a></li>
+          <li><a href="/venue/">Venue &amp; travel</a></li>
+          <li><a href="/faq/">FAQ</a></li>
+          <li><a href="/press/">Press</a></li>
+        </ul>
+      </nav>
+      <div class="footer__meta mono">
+        <p>{DATE_RANGE}</p>
+        <p>Victoria Park, London E9</p>
+        <p class="muted">A fictional festival. Tickets are sold by our ticketing partner.</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    border-top: 1px solid var(--line);
+    padding-block: clamp(48px, 7vw, 96px) 32px;
+  }
+  .footer__sponsors { margin-bottom: clamp(48px, 7vw, 96px); }
+  .sponsors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px clamp(24px, 4vw, 56px);
+    margin-top: 24px;
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 1rem + 1.2vw, 2rem);
+    text-transform: uppercase;
+    line-height: 1;
+    color: var(--muted);
+  }
+  .footer__grid {
+    display: grid;
+    gap: 32px;
+    align-items: end;
+  }
+  .footer__mark {
+    font-family: var(--font-display);
+    font-variation-settings: 'wght' 900, 'wdth' 120;
+    font-size: clamp(4rem, 14vw, 12rem);
+    line-height: 0.8;
+    color: var(--fg);
+  }
+  .footer__mark span { font-variation-settings: 'wght' 200, 'wdth' 120; }
+  .footer__links {
+    display: grid;
+    grid-template-columns: repeat(2, max-content);
+    gap: 8px 32px;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: var(--fs-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .footer__links a { text-decoration: none; display: inline-block; padding-block: 6px; }
+  .footer__links a:hover { text-decoration: underline; text-underline-offset: 4px; }
+  .footer__meta { display: grid; gap: 4px; }
+  @media (min-width: 1200px) {
+    .footer__grid { grid-template-columns: minmax(0, 1.4fr) auto minmax(0, 1fr); }
+    .footer__mark { font-size: clamp(4rem, 10vw, 12rem); }
+  }
+</style>

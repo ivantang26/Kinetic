@@ -1,0 +1,252 @@
+/* Schedule island. Static by design: nothing here animates. */
+.sched { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
+.sched__controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+.sched__count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  margin-left: 6px;
+  padding-inline: 6px;
+  border-radius: 999px;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 0.75rem;
+}
+.chip[aria-pressed='true'] .sched__count { background: var(--on-accent); color: var(--accent); }
+.sched__offline {
+  padding: 12px 16px;
+  border: 2px solid var(--fg);
+  border-radius: 12px;
+  color: var(--fg);
+}
+
+/* Clash banner */
+.clash-banner {
+  display: grid;
+  gap: 8px;
+  padding: 16px 20px;
+  border-radius: 16px;
+  background: var(--text);
+  color: var(--bg);
+}
+.clash-banner__title { text-transform: uppercase; letter-spacing: 0.06em; }
+.clash-banner ul { display: grid; gap: 4px; }
+
+.sched__stages { margin-bottom: 4px; }
+
+/* Stage headings */
+.tt-stage {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: var(--fs-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg);
+}
+
+/* ---- Wide: horizontal time axis ---- */
+.tt-wide {
+  --stage-col: 150px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--bg);
+  overscroll-behavior-x: contain;
+}
+.tt-wide__canvas { position: relative; padding-bottom: 12px; }
+.tt-wide__ruler {
+  position: relative;
+  height: 44px;
+  margin-left: var(--stage-col);
+  border-bottom: 1px solid var(--line);
+}
+.tt-wide__ruler span {
+  position: absolute;
+  top: 12px;
+  transform: translateX(6px);
+  color: var(--muted);
+}
+.tt-wide__ruler span::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: -12px;
+  height: 44px;
+  border-left: 1px solid var(--line);
+}
+.tt-wide__row {
+  display: grid;
+  grid-template-columns: var(--stage-col) 1fr;
+  border-bottom: 1px solid var(--line);
+}
+.tt-wide__row .tt-stage {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--bg);
+  border-right: 1px solid var(--line);
+}
+.tt-wide__lane {
+  position: relative;
+  height: 124px;
+  margin: 0;
+  background-image: repeating-linear-gradient(90deg, var(--line) 0 1px, transparent 1px calc(60px * 2.4));
+  background-size: 100% 100%;
+}
+.tt-wide__lane > li { position: absolute; top: 8px; bottom: 8px; margin-left: 3px; }
+
+/* ---- Tablet / mobile: vertical time axis ---- */
+.tt-tall {
+  display: grid;
+  grid-template-columns: 52px repeat(var(--cols), minmax(0, 1fr));
+  gap: 0 10px;
+}
+.tt-tall__times {
+  position: relative;
+  margin-top: 44px;
+}
+.tt-tall__times span {
+  position: absolute;
+  left: 0;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+.tt-tall__col .tt-stage {
+  position: sticky;
+  top: var(--nav-h);
+  z-index: 2;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  background: var(--bg);
+  border-bottom: 2px solid var(--fg);
+}
+.tt-tall__lane {
+  position: relative;
+  margin: 0;
+  background-image: repeating-linear-gradient(180deg, var(--line) 0 1px, transparent 1px calc(60px * 2));
+}
+.tt-tall__lane > li { position: absolute; left: 0; right: 0; margin-top: 3px; }
+
+/* ---- Set card ---- */
+.set {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 52px 10px 12px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+}
+.set__time { font-size: 0.875rem; color: var(--fg); display: flex; gap: 8px; align-items: center; }
+.set__name {
+  font-family: var(--font-display);
+  font-variation-settings: 'wght' 750, 'wdth' 92;
+  font-size: 1.25rem;
+  line-height: 1;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.set.is-headliner .set__name { font-variation-settings: 'wght' 900, 'wdth' 92; }
+.set__sub { font-size: 0.875rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.set--talk, .set--workshop { border-style: dashed; }
+.set__star {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
+}
+.set__star:hover { background: color-mix(in srgb, currentColor 14%, transparent); }
+.set.is-starred {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+.set.is-starred .set__time,
+.set.is-starred .set__sub,
+.set.is-starred .set__star { color: var(--on-accent); }
+.set.is-starred .set__star:focus-visible { outline-color: var(--on-accent); }
+.set.is-clash { outline: 3px dashed var(--on-accent); outline-offset: -6px; }
+.set__flag {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--on-accent);
+  color: var(--accent);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ---- My PULSE ---- */
+.mine { display: grid; gap: 24px; }
+.mine__head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 16px; }
+.mine__title {
+  font-family: var(--font-display);
+  font-variation-settings: 'wght' 800, 'wdth' 100;
+  font-size: var(--fs-headline);
+  line-height: 0.9;
+  text-transform: uppercase;
+  color: var(--fg);
+}
+.mine__dayname {
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--fg);
+  color: var(--fg);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.mine__item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px 20px;
+  align-items: start;
+  padding-block: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.mine__time { font-size: 1rem; color: var(--fg); padding-top: 4px; }
+.mine__name {
+  font-family: var(--font-display);
+  font-variation-settings: 'wght' 800, 'wdth' 100;
+  font-size: clamp(1.5rem, 1.2rem + 1vw, 2.25rem);
+  line-height: 1;
+  text-transform: uppercase;
+}
+.mine__stage { color: var(--muted); margin-top: 4px; }
+.mine__clash {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--text);
+  color: var(--bg);
+}
+@media (max-width: 520px) {
+  .mine__item { grid-template-columns: 1fr auto; }
+  .mine__time { grid-column: 1 / -1; }
+}
